@@ -1,49 +1,54 @@
+import os
 import re
 import nltk
 import joblib
 from nltk.corpus import stopwords
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from dotenv import load_dotenv
 
-# Load model and vectorizer
+# Load environment variables
+load_dotenv()
+from pathlib import Path
+
+print("Current directory:", Path.cwd())
+print(".env file exists:", Path(".env").exists())
+
+TOKEN = os.getenv("BOT_TOKEN")  # Make sure .env contains: BOT_TOKEN=your_token_here
+
+print("Loaded token:", TOKEN)  # ✅ Now it's safe to print
+
+# Download stopwords
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
+# Load model and tools
 model = joblib.load("sentiment_model.pkl")
 vectorizer = joblib.load("tfidf_vectorizer.pkl")
+label_encoder = joblib.load("label_encoder.pkl")
 
-# Ensure stopwords are available
-nltk.download('stopwords')
-
-# Clean the incoming message
 def clean_text(text):
     text = text.lower()
     text = re.sub(r'[^a-z\s]', '', text)
     words = text.split()
-    words = [w for w in words if w not in stopwords.words('english')]
+    words = [w for w in words if w not in stop_words]
     return ' '.join(words)
 
-# Command handler for /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! Send me a review and I’ll tell you its sentiment.")
+    await update.message.reply_text("👋 Hi! Send me a message and I'll analyze its sentiment.")
 
-# Message handler
 async def analyze_sentiment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     cleaned = clean_text(user_input)
     X = vectorizer.transform([cleaned])
     prediction = model.predict(X)[0]
+    sentiment = label_encoder.inverse_transform([prediction])[0]
+    await update.message.reply_text(f"🧠 Sentiment: *{sentiment.capitalize()}*", parse_mode='Markdown')
 
-    label_map = {0: "Negative", 1: "Neutral", 2: "Positive"}
-    sentiment = label_map.get(prediction, "Unknown")
-
-    await update.message.reply_text(f"Sentiment: {sentiment}")
-
-# Bot setup
 def main():
-    TOKEN = "8150065506:AAGO6vHdrv1Vegtb7k-fhT8u_vProZXRC1s"  # ← Replace this with your token
     app = ApplicationBuilder().token(TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, analyze_sentiment))
-
     print("🤖 Bot is running...")
     app.run_polling()
 

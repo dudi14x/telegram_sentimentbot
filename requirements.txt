@@ -4,3 +4,12 @@ textblob
 scikit-learn
 joblib
 python-dotenv
+streamlit
+scikit-learn
+pandas
+nltk
+joblib
+
+
+GEMINI_API_KEY= "AIzaSyAw8iwtqLIXeb5FthVeXryIVcogWrmD16E"
+
