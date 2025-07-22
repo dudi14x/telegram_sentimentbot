@@ -1,15 +1,7 @@
-python-telegram-bot==20.3
-nltk
-textblob
-scikit-learn
-joblib
-python-dotenv
 streamlit
 scikit-learn
 pandas
 nltk
 joblib
-
-
-GEMINI_API_KEY= "AIzaSyAw8iwtqLIXeb5FthVeXryIVcogWrmD16E"
-
+python-telegram-bot==20.3
+python-dotenv
