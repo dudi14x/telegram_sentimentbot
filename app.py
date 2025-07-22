@@ -16,7 +16,12 @@ def load_components():
     label_encoder = joblib.load("label_encoder.pkl")
     return model, vectorizer, label_encoder
 
-model, vectorizer, label_encoder = load_components()
+# ✅ Try/except to reveal any errors in model loading
+try:
+    model, vectorizer, label_encoder = load_components()
+except Exception as e:
+    st.error(f"❌ Failed to load model files: {e}")
+    st.stop()
 
 # Text cleaning function
 def clean_text(text):
